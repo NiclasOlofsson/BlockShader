@@ -3,6 +3,8 @@
 struct GeometryShaderInput
 {
 	float4			pos				: SV_POSITION;
+	float3 fragmentPosition : POSI;
+	float3 lookVector : POSITION;
 #ifndef BYPASS_PIXEL_SHADER
 	lpfloat4		color				: COLOR;
 	snorm float2		uv0				: TEXCOORD_0;
@@ -23,6 +25,8 @@ struct GeometryShaderInput
 struct GeometryShaderOutput
 {
 	float4				pos				: SV_POSITION;
+	float3 fragmentPosition : POSI;
+	float3 lookVector : POSITION;
 #ifndef BYPASS_PIXEL_SHADER
 	lpfloat4			color			: COLOR;
 	snorm float2		uv0				: TEXCOORD_0;
