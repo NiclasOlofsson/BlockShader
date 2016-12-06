@@ -1,0 +1,16 @@
+{
+  "header": {
+    "pack_id": "BlockShader",
+    "name": "BlockShader",
+    "packs_version": "1.0.0",
+    "description": "BlockShader by gurunx - becuase voxels matters",
+    "modules": [
+      {
+        "description": "BlockShader by gurunx - becuase voxels matters",
+        "version": "1.0.0",
+        "uuid": "BlockShader",
+        "type": "resources"
+      }
+    ]
+  }
+}
