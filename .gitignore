@@ -253,7 +253,7 @@ paket-files/
 *.suo
 *.sdf
 **/Debug/
-**/.vs
+**/.vs/
 *.suo
 *.sdf
 *.tlog
