@@ -254,3 +254,7 @@ paket-files/
 *.sdf
 **/Debug/
 **/.vs
+*.suo
+*.sdf
+*.tlog
+*.cso
