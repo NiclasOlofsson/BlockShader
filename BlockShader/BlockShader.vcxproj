@@ -98,6 +98,9 @@
       <ShaderModel>5.0</ShaderModel>
       <AdditionalIncludeDirectories>$(SolutionDir)Includes\</AdditionalIncludeDirectories>
     </FxCompile>
+    <PostBuildEvent>
+      <Command>xcopy $(MSBuildProjectDirectory)\..\shaders C:\Users\nicke_000\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\resource_packs\BlockShader\shaders\ /S /Y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
