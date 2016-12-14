@@ -79,13 +79,9 @@ static const float3 UNIT_Y = float3(0, 1, 0);
 
 float GetWaterDisplacementInternal(float3 worldPos, float2 direction, float A, float S, float L)
 {
-    float3 realWorldPos = worldPos - VIEW_POS;
-    float3 relPos = -realWorldPos;
+    float3 relPos = (worldPos - VIEW_POS) * -1;
     float cameraDepth = length(relPos);
-
-    float F = dot(normalize(relPos), UNIT_Y);
-    F = 1.0 - max(F, 0.1);
-    F = 1.0 - lerp(F * F * F * F, 1.0, min(1.0, cameraDepth / FAR_CHUNKS_DISTANCE));
+    float F = 1 - (cameraDepth / FAR_CHUNKS_DISTANCE);
 
     float3 pos = worldPos;
     float x = pos.x;
@@ -117,9 +113,9 @@ float GetWaterDisplacement(float3 worldPos)
 {
     float2 direction = float2(0.5, 1);
     float factor = abs(clamp(FOG_CONTROL.x + 0.50, 0, 1));
-    float A = 0.2 + lerp(0.3, 0, factor);
-    float S = 1;
-    float L = 2;
+    float A = 0.05 + lerp(0.3, 0, factor);
+    float S = 2;
+    float L = 4;
 
     return GetWaterDisplacementInternal(worldPos, direction, A, S, L);
 }
@@ -132,6 +128,11 @@ float3 GetNormal(float3 v1, float3 v2, float3 v3)
     return cross(a, b);
 }
 
+bool IsAtWaterLimit(float3 pos)
+{
+    return frac(pos.y) > 0.80 && frac(pos.y) < 0.98;
+}
+
 GeometryShaderOutput Tesselate(GeometryShaderInput input0, GeometryShaderInput input1, inout TriangleStream<GeometryShaderOutput> outS)
 {
     GeometryShaderOutput output = (GeometryShaderOutput) 0;
@@ -142,8 +143,35 @@ GeometryShaderOutput Tesselate(GeometryShaderInput input0, GeometryShaderInput i
     output.uv1 = lerp(input0.uv1, input1.uv1, 0.5);
     output.fragmentPosition = lerp(input0.fragmentPosition, input1.fragmentPosition, 0.5);
 
-    output.pos.y -= GetWaterDisplacement(output.fragmentPosition);
-
+    float3 pos0 = input0.fragmentPosition;
+    float3 pos1 = input1.fragmentPosition;
+    if (pos0.y >= pos1.y && frac(pos0.y) > 0.99)
+    {
+        // stream into water
+    }
+    else if (pos1.y > pos0.y && frac(pos1.y) > 0.99)
+    {
+        // stream into water
+    }
+    else if (pos1.y > pos0.y && !IsAtWaterLimit(pos1))
+    {
+        // stream from water
+        // High point is water level, and lower point is not
+    }
+    else if (pos0.y > pos1.y && !IsAtWaterLimit(pos0))
+    {
+        // stream from water
+    }
+    else if (pos0.y == pos1.y && !IsAtWaterLimit(pos0))
+    {
+        // stream
+    }
+    else
+    {
+        float displacement = GetWaterDisplacement(output.fragmentPosition);
+        output.pos.y -= displacement;
+        output.fragmentPosition.y -= displacement;
+    }
     //output.pos.y -= GetWaterDisplacementInternal(output.fragmentPosition, float2(1, 0.5), 0.05, 3, 1);
 
     output.lookVector = lerp(input0.lookVector, input1.lookVector, 0.5);
@@ -159,7 +187,7 @@ GeometryShaderOutput Tesselate(GeometryShaderInput input0, GeometryShaderInput i
 void WriteTriangle(GeometryShaderOutput pos1, GeometryShaderOutput pos2, GeometryShaderOutput pos3, inout TriangleStream<GeometryShaderOutput> outStream)
 {
 #ifdef NEAR_WATER
-    float3 normal = GetNormal(pos1.pos.xyz, pos2.pos.xyz, pos3.pos.xyz);
+    float3 normal = GetNormal(pos1.fragmentPosition, pos2.fragmentPosition, pos3.fragmentPosition);
     pos1.normal = normal;
     pos2.normal = normal;
     pos3.normal = normal;
@@ -178,98 +206,110 @@ void main(triangle GeometryShaderInput input[3], inout TriangleStream<GeometrySh
 
 #ifdef NEAR_WATER
 
-    float lenA = abs(distance(input[0].pos.xz, input[1].pos.xz));
-    float lenB = abs(distance(input[1].pos.xz, input[2].pos.xz));
-    float lenC = abs(distance(input[2].pos.xz, input[0].pos.xz));
 
-    GeometryShaderOutput pos1;
-    GeometryShaderOutput pos2;
-    GeometryShaderOutput pos3;
+    //bool doWave = frac(input[0].lookVector.y) > 0.887 && frac(input[0].lookVector.y) > 0.00789;
+    bool doWave = frac(input[0].fragmentPosition.y) > 0.85 && frac(input[0].fragmentPosition.y) < 0.95;
+    doWave = doWave || frac(input[1].fragmentPosition.y) > 0.85 && frac(input[1].fragmentPosition.y) < 0.95;
+    doWave = doWave || frac(input[2].fragmentPosition.y) > 0.85 && frac(input[2].fragmentPosition.y) < 0.95;
 
-    if (lenB > lenA && lenB > lenC)
+    float3 normal = abs(normalize(GetNormal(input[0].fragmentPosition.xyz, input[1].fragmentPosition.xyz, input[2].fragmentPosition.xyz)));
+    if (doWave || normal.x < 0.2 && normal.z < 0.2 && normal.y > 0.9)
+    //if (doWave)
     {
+        float lenA = abs(distance(input[0].pos.xz, input[1].pos.xz));
+        float lenB = abs(distance(input[1].pos.xz, input[2].pos.xz));
+        float lenC = abs(distance(input[2].pos.xz, input[0].pos.xz));
+
+        GeometryShaderOutput pos1;
+        GeometryShaderOutput pos2;
+        GeometryShaderOutput pos3;
+
+        if (lenB > lenA && lenB > lenC)
+        {
     // T1
-        pos1 = Tesselate(input[0], input[0], outStream);
-        pos2 = Tesselate(input[0], input[1], outStream);
-        pos3 = Tesselate(input[1], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[0], input[0], outStream);
+            pos2 = Tesselate(input[0], input[1], outStream);
+            pos3 = Tesselate(input[1], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T2
-        pos1 = Tesselate(input[0], input[1], outStream);
-        pos2 = Tesselate(input[1], input[1], outStream);
-        pos3 = Tesselate(input[1], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[0], input[1], outStream);
+            pos2 = Tesselate(input[1], input[1], outStream);
+            pos3 = Tesselate(input[1], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T3
-        pos1 = Tesselate(input[1], input[2], outStream);
-        pos2 = Tesselate(input[2], input[2], outStream);
-        pos3 = Tesselate(input[0], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[1], input[2], outStream);
+            pos2 = Tesselate(input[2], input[2], outStream);
+            pos3 = Tesselate(input[0], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T4
-        pos1 = Tesselate(input[0], input[2], outStream);
-        pos2 = Tesselate(input[0], input[0], outStream);
-        pos3 = Tesselate(input[1], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
-    }
-    else if (lenA > lenB && lenA > lenC)
-    {
+            pos1 = Tesselate(input[0], input[2], outStream);
+            pos2 = Tesselate(input[0], input[0], outStream);
+            pos3 = Tesselate(input[1], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
+        }
+        else if (lenA > lenB && lenA > lenC)
+        {
     // T1
-        pos1 = Tesselate(input[0], input[0], outStream);
-        pos2 = Tesselate(input[0], input[1], outStream);
-        pos3 = Tesselate(input[0], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[0], input[0], outStream);
+            pos2 = Tesselate(input[0], input[1], outStream);
+            pos3 = Tesselate(input[0], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T2
-        pos1 = Tesselate(input[0], input[1], outStream);
-        pos2 = Tesselate(input[1], input[1], outStream);
-        pos3 = Tesselate(input[1], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[0], input[1], outStream);
+            pos2 = Tesselate(input[1], input[1], outStream);
+            pos3 = Tesselate(input[1], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T3
-        pos1 = Tesselate(input[1], input[2], outStream);
-        pos2 = Tesselate(input[2], input[2], outStream);
-        pos3 = Tesselate(input[1], input[0], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[1], input[2], outStream);
+            pos2 = Tesselate(input[2], input[2], outStream);
+            pos3 = Tesselate(input[1], input[0], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T4
-        pos1 = Tesselate(input[2], input[2], outStream);
-        pos2 = Tesselate(input[2], input[0], outStream);
-        pos3 = Tesselate(input[0], input[1], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
-    }
-    else if (lenC > lenB && lenC > lenB)
-    {
+            pos1 = Tesselate(input[2], input[2], outStream);
+            pos2 = Tesselate(input[2], input[0], outStream);
+            pos3 = Tesselate(input[0], input[1], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
+        }
+        else if (lenC > lenB && lenC > lenB)
+        {
     // T1
-        pos1 = Tesselate(input[0], input[0], outStream);
-        pos2 = Tesselate(input[0], input[1], outStream);
-        pos3 = Tesselate(input[0], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[0], input[0], outStream);
+            pos2 = Tesselate(input[0], input[1], outStream);
+            pos3 = Tesselate(input[0], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T2
-        pos1 = Tesselate(input[0], input[1], outStream);
-        pos2 = Tesselate(input[1], input[1], outStream);
-        pos3 = Tesselate(input[0], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[0], input[1], outStream);
+            pos2 = Tesselate(input[1], input[1], outStream);
+            pos3 = Tesselate(input[0], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T3
-        pos1 = Tesselate(input[1], input[1], outStream);
-        pos2 = Tesselate(input[1], input[2], outStream);
-        pos3 = Tesselate(input[0], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
+            pos1 = Tesselate(input[1], input[1], outStream);
+            pos2 = Tesselate(input[1], input[2], outStream);
+            pos3 = Tesselate(input[0], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
 
     // T4
-        pos1 = Tesselate(input[1], input[2], outStream);
-        pos2 = Tesselate(input[2], input[2], outStream);
-        pos3 = Tesselate(input[0], input[2], outStream);
-        WriteTriangle(pos1, pos2, pos3, outStream);
-    }
-    else
-    {
-    }
+            pos1 = Tesselate(input[1], input[2], outStream);
+            pos2 = Tesselate(input[2], input[2], outStream);
+            pos3 = Tesselate(input[0], input[2], outStream);
+            WriteTriangle(pos1, pos2, pos3, outStream);
+        }
+        else
+        {
+        }
 
 
-    return;
+        return;
+    }
+
 #endif
 
 #ifdef INSTANCEDSTEREO

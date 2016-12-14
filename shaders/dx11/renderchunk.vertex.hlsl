@@ -95,12 +95,25 @@ void main(in VS_Input VSInput, out PS_Input PSInput)
 #endif
 
 #ifdef ALPHA_TEST
-	// Moving plants
-    float3 pp = worldPos;
-    if (PSInput.color.g + PSInput.color.g > PSInput.color.r + PSInput.color.b)
     {
-        PSInput.position.x += sin(TIME * 4.0 + pp.x + pp.z + pp.x + pp.z + pp.y) * sin(pp.z) * 0.015;
-        PSInput.position.y -= sin(TIME * 1.5 + pp.x + pp.z + pp.x + pp.z + pp.y) * sin(pp.z) * 0.01;
+        float3 pos = mul(WORLD, float4(worldPos, 1)).xyz + VIEW_POS;
+        //if (VIEW_POS.y > 65 && VIEW_POS.y < 70)
+        //{
+        //    PSInput.color = float4(0, 0, 1, 1);
+        //}
+        //else if (pos.y > 65 && pos.y < 70)
+        //{
+        //    PSInput.color = float4(1, 0, 0, 1);
+        //}
+        {
+        	// Moving plants
+            if (PSInput.color.g + PSInput.color.g > PSInput.color.r + PSInput.color.b)
+            {
+                // FIX THIS. Not good enough animation.
+                PSInput.position.x += sin(TIME * 4.0 + pos.x + pos.z + pos.x + pos.z + pos.y) * sin(pos.z) * 0.015;
+                PSInput.position.y -= sin(TIME * 1.5 + pos.x + pos.z + pos.x + pos.z + pos.y) * sin(pos.z) * 0.01;
+            }
+        }
     }
 #endif
 
@@ -138,35 +151,12 @@ void main(in VS_Input VSInput, out PS_Input PSInput)
 
 #ifdef FOG
     float len = cameraDepth / RENDER_DISTANCE;
-    float lenb = cameraDepth / RENDER_DISTANCE;
-    float lenc = cameraDepth / RENDER_DISTANCE * 4.0;
-
 #ifdef ALLOW_FADE
 	len += CURRENT_COLOR.r;
-	lenb += CURRENT_COLOR.r;
-	lenc += CURRENT_COLOR.r;
 #endif
 
     PSInput.fogColor.rgb = FOG_COLOR.rgb;
     PSInput.fogColor.a = clamp((len - FOG_CONTROL.x) / (FOG_CONTROL.y - FOG_CONTROL.x), 0.0, 1.0);
-
-	//if (FOG_COLOR.r > 0.15 && FOG_COLOR.g > 0.15) {
-	//	if (FOG_CONTROL.x < 0.55 && FOG_CONTROL.x > 0.1) {
-	//		PSInput.fogColor.a = clamp((len - FOG_CONTROL.x), 0.0, 1.0);
-	//	}
-	//}
-
-	//if (FOG_CONTROL.x < 0.15) {
-	//	PSInput.fogColor.a *= clamp((lenc - FOG_CONTROL.x), 0.0, 0.3);
-	//	PSInput.fogColor.rgb /= FOG_COLOR.rgb;
-	//	PSInput.fogColor.rgb *= float3(0.1, 0.1, 0.3);
-	//}
-	//else {
-	//	PSInput.fogColor.a *= clamp((lenc - FOG_CONTROL.x), 0.0, 1.0);
-	//	PSInput.fogColor.rgb /= FOG_COLOR.rgb;
-	//	PSInput.fogColor.rgb *= float3(0.1, 0.1, 1.0);
-	//}
-
 
 #endif
 
@@ -182,54 +172,15 @@ void main(in VS_Input VSInput, out PS_Input PSInput)
     float4 depthColor = float4(PSInput.color.rgb * 0.5, 1.0);
     float4 traspColor = float4(PSInput.color.rgb * 0.45, 0.8);
     float4 surfColor = float4(PSInput.color.rgb, 1.0);
+
     float4 nearColor = lerp(traspColor, depthColor, PSInput.color.a);
     PSInput.color = lerp(surfColor, nearColor, F);
-
-    float amplitude = 0.1 + lerp(0.2, 0, FOG_CONTROL.x);
-    float speed = 2.9 + lerp(10, 0, FOG_CONTROL.x);
-
-    float3 pos = worldPos.xyz + VIEW_POS;
-    float x = pos.x;
-    float y = pos.y;
-    float z = pos.z;
-    float2 direction = float2(1, 1);
-    float factor = abs(clamp(FOG_CONTROL.x + 0.50, 0, 1));
-    float A = 0.15 + lerp(0.3, 0, factor);
-    float S = 3;
-    float L = 6;
-
-    float w = 6.28 / L;
-    float t = TIME;
-    float ph = S * 6.28 / L;
-
-    //PSInput.position.y -= lerp(0, A * sin(dot(direction, float2(x, z)) * w + t * ph) + A, F);
-
-    //if (FOG_CONTROL.x < 55)
-    //{
-    //    direction = float2(0, 1);
-    //    A = 0.05;
-    //    S = 4;
-    //    L = 2;
-
-    //    w = 6.28 / L;
-    //    t = TIME;
-    //    ph = S * 6.28 / L;
-
-    //    PSInput.position.y -= lerp(0, A * sin(dot(direction, float2(x, z)) * w + t * ph) + A, F);
-    //}
-
-
-
 #else
 	PSInput.color.a = PSInput.position.z / FAR_CHUNKS_DISTANCE + 0.5;
 #endif //FANCY
 #endif
 
-    PSInput.fragmentPosition = worldPos.xyz + VIEW_POS;
-    //PSInput.fragmentPosition.y += 0.0015;
-
-    float3 cam_fix = worldPos.xyz + VIEW_POS;
-    float3 fragment_pos = cam_fix;
-    //fragment_pos.y += 0.0015;
-    PSInput.lookVector = fragment_pos - VIEW_POS;
+    PSInput.fragmentPosition = mul(WORLD, float4(worldPos, 1)).xyz + VIEW_POS;
+    PSInput.fragmentPosition.y -= 0.12; // Still haven't figured out why, but this is the "logical" thing todo.
+    PSInput.lookVector = VSInput.position;
 }
