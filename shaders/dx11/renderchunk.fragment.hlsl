@@ -78,6 +78,7 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
 	float4 diffuse = TEXTURE_0.Sample(TextureSampler0, PSInput.uv0);
 #else
     float4 diffuse = texture2D_AA(TEXTURE_0, TextureSampler0, PSInput.uv0);
+    //float4 diffuse = PSInput.color;
     #ifdef NEAR_WATER
     {
         
@@ -143,7 +144,7 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
     float4 uvs = TEXTURE_1.Sample(TextureSampler1, float2(PSInput.uv1.x * 0.65, PSInput.uv1.y));
     float4 white = float4(1, 1, 1, 1);
     //float3 sunPosition = float3(4675, 65 + 10, -2435);
-    float3 sunPosition = float3(0, 1000 * uvs.r, -10000 * (1 -  uvs.r)) + VIEW_POS;
+    float3 sunPosition = float3(0, 1000 * uvs.r, -10000 * (1 - uvs.r)) + VIEW_POS;
     float3 sun = normalize(PSInput.fragmentPosition - sunPosition); // From sun to pixel
 
     float3 lightDirection = normalize(sun);
@@ -164,15 +165,13 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
     //float3 reflectionVector = reflect(lightDirection, normal);
     //float3 specularTerm = pow(saturate(dot(reflectionVector, cameraDirection)), 15);
 
-    // Refractions
-    //specularTerm *= pow(saturate(dot(normalize(float3(0, 1, 0)), halfVector)), 45);
+    float intensity = clamp(pow(FOG_CONTROL.x * 10, 4) / 10, 0, 1);
+    diffuse.rgb += FOG_COLOR.rgb * intensity * specularTerm;
 
-    float intensity = 1.0;
-    diffuse.rgb += FOG_COLOR.rgb * intensity * specularTerm * clamp(pow(FOG_CONTROL.x + 0.55, 5) - 0.55, 0, 1);
-
+    // Adjust for: more specular, less transparanecy
     float alpha = lerp(0.8, 1.0, specularTerm);
-    float3 relPos = (PSInput.fragmentPosition - VIEW_POS) * -1;
-    float cameraDepth = length(relPos);
+
+    float cameraDepth = length(-(PSInput.fragmentPosition - VIEW_POS));
     float F = (cameraDepth / FAR_CHUNKS_DISTANCE);
 
     diffuse.a *= lerp(alpha, 1, F);
@@ -267,9 +266,11 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
     //    diffuse.rgb = 0.4;
     //}
 
-
 	// FINALLY SET IT
     PSOutput.color = diffuse;
+
+#ifdef SWAY
+#endif
 
 #ifdef VR_MODE
 	// On Rift, the transition from 0 brightness to the lowest 8 bit value is abrupt, so clamp to 

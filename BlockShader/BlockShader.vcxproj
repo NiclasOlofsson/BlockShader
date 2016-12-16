@@ -99,7 +99,8 @@
       <AdditionalIncludeDirectories>$(SolutionDir)Includes\</AdditionalIncludeDirectories>
     </FxCompile>
     <PostBuildEvent>
-      <Command>xcopy $(MSBuildProjectDirectory)\..\shaders C:\Users\nicke_000\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\resource_packs\BlockShader\shaders\ /S /Y</Command>
+      <Command>xcopy $(MSBuildProjectDirectory)\..\shaders C:\Users\nicke_000\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\resource_packs\BlockShader\shaders\ /S /Y
+xcopy $(MSBuildProjectDirectory)\..\materials C:\Users\nicke_000\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\resource_packs\BlockShader\materials\ /S /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -141,10 +142,16 @@
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\sky.fragment.hlsl">
-      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
+    <FxCompile Include="..\shaders\dx11\sun.fragment.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
     </FxCompile>
+    <FxCompile Include="..\shaders\dx11\sun.vertex.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+    </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\materials\sky.material" />
+    <None Include="..\materials\terrain.material" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
