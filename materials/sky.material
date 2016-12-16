@@ -1,6 +1,5 @@
 {
   "sun_moon": {
-    "defines": [ "SUN_MOON" ],
     "states": [
       "DisableDepthWrite",
       "DisableAlphaWrite",
@@ -10,9 +9,9 @@
     "blendSrc": "SourceAlpha",
     "blendDst": "One",
 
-		"vertexShader" : "shaders/sun.vertex",
+		"vertexShader" : "shaders/uv.vertex",
 		"vrGeometryShader": "shaders/uv.geometry",
-		"fragmentShader" : "shaders/sun.fragment",
+		"fragmentShader" : "shaders/texture_ccolor.fragment",
     "vertexFields": [
       { "field": "Position" },
       { "field": "UV0" }
@@ -36,7 +35,6 @@
   },
 
   "stars": {
-    "defines": [ "STARS" ],
     "states": [
       "DisableDepthWrite",
       "DisableAlphaWrite",
@@ -72,7 +70,6 @@
   },
 
   "skyplane": {
-    "defines": [ "SKYPLANE" ],
     "states": [ "DisableDepthWrite", "DisableAlphaWrite" ],
 
 		"vertexShader" : "shaders/sky.vertex",

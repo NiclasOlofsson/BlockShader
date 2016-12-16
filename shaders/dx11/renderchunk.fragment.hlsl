@@ -165,7 +165,7 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
     //float3 reflectionVector = reflect(lightDirection, normal);
     //float3 specularTerm = pow(saturate(dot(reflectionVector, cameraDirection)), 15);
 
-    float intensity = clamp(pow(FOG_CONTROL.x * 10, 4) / 10, 0, 1);
+    float intensity = clamp(pow(FOG_CONTROL.x * 10, 4) / 10, 0, 1) - 0.55;
     diffuse.rgb += FOG_COLOR.rgb * intensity * specularTerm;
 
     // Adjust for: more specular, less transparanecy
@@ -186,7 +186,8 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
     // thunder storms too. Should probably check the WEATHER define instead of fog.
     if (FOG_CONTROL.x < 0.55 && FOG_CONTROL.x > 0.1)
     {
-        diffuse = lerp(float4(1, 1, 1, 1), diffuse, clamp(FOG_CONTROL.x + 0.5, 0, 1));
+        //diffuse = lerp(float4(1, 1, 1, 1), diffuse, clamp(FOG_CONTROL.x + 0.5, 0, 1));
+        diffuse = lerp(FOG_COLOR, diffuse, clamp(FOG_CONTROL.x + 0.5, 0, 1));
     }
 
 

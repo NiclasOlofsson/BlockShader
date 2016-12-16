@@ -93,27 +93,10 @@ void main(in VS_Input VSInput, out PS_Input PSInput)
 #ifdef SWAY
     {
         float3 pos = mul(WORLD, float4(worldPos, 1)).xyz + VIEW_POS;
-        //pos.y -= 0.12;
-        //if (VIEW_POS.y > 65 && VIEW_POS.y < 70)
-        //{
-        //    PSInput.color = float4(0, 0, 1, 1);
-        //}
-        //else if (pos.y > 65 && pos.y < 70)
-        //{
-        //    PSInput.color = float4(1, 0, 0, 1);
-        //}
-
         // Moving plants
         // FIX THIS. Not good enough animation.
-        //if (VSInput.uv0.y > 0.5)
-        //{
-        //    PSInput.position.x += sin(TIME * 4.0 + pos.x + pos.z + pos.x + pos.z + pos.y) * sin(pos.z) * 0.015;
-        //    //PSInput.position.y -= lerp(0, sin(TIME * 1.5 + pos.x + pos.z + pos.x + pos.z + pos.y) * sin(pos.z) * 0.01, PSInput.uv0.y);
-        //    PSInput.color.r = VSInput.uv0.x;
-        //    PSInput.color.g = VSInput.uv0.y;
-        //    PSInput.color.b = VSInput.color.a;
-        //}
-        worldPos.x += 0.60;
+        worldPos.x += sin(TIME * 4.0 + pos.x + pos.z + pos.y) * sin(pos.y) * 0.010;
+        worldPos.y -= sin(TIME * 3.0 + pos.x + pos.z + pos.y) * sin(pos.y) * 0.005;
     }
 
 #endif
