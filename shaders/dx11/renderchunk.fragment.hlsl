@@ -60,9 +60,21 @@ float4 GetSunColor(float3 pos, float day_flag)
     return sun_color;
 }
 
-//#define REFLECT_FAR_WATER
-
 static const float3 origin_water_normal = float3(0.0, 1.0, 0.0);
+
+float A = 0.15;
+float B = 0.50;
+float C = 0.10;
+float D = 0.20;
+float E = 0.02;
+float F = 0.30;
+float W = 11.2;
+
+float3 Uncharted2Tonemap(float3 x)
+{
+    return ((x * (A * x + C * B) + D * E) / (x * (A * x + B) + D * F)) - E / F;
+}
+
 
 //
 // MAIN
@@ -89,7 +101,6 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
     }
     #endif
 #endif
-
 
 #ifdef SEASONS_FAR
 	diffuse.a = 1.0f;
@@ -207,6 +218,20 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
 #endif
 #endif
     {
+
+        float3 texColor = diffuse * 1.5; // Hardcoded Exposure Adjustment
+
+        float ExposureBias = 2.0f;
+        float3 curr = Uncharted2Tonemap(ExposureBias * texColor);
+
+        float3 whiteScale = 1.0f / Uncharted2Tonemap(W);
+        float3 color = curr * whiteScale;
+
+        float3 retColor = pow(color, 1 / 2.2);
+
+        // Uncommment next line for tonemapping.
+        //diffuse.rgb = texColor;
+
         // INFO: Stuff to play around with
         // PSInput.uv0.r highlights sand?
         // PSInput.uv0.g nothing?
@@ -231,9 +256,9 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
                 float fadeIn = (PSInput.uv1.y - (s - t)) * 1 / t;
                 shadowStrenght = lerp(shadowStrenght, 1.0, saturate(fadeIn));
             }
-            shadowStrenght = clamp(shadowStrenght, 1.0, 1.0);
+            shadowStrenght = clamp(shadowStrenght, 0.3, 1.0);
             float3 shadowColor = diffuse.rgb * shadowStrenght;
-            //diffuse.rgb = lerp(shadowColor, diffuse.rgb, 1 - fogFactor);
+            diffuse.rgb = lerp(shadowColor, diffuse.rgb, 1 - fogFactor);
         }
 
         if (PSInput.color.a < s && PSInput.uv1.r == 0 && PSInput.color.a > 0.0)
@@ -245,9 +270,9 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
                 float fadeIn = (PSInput.color.a - (s - t)) * 1 / t;
                 shadowStrenght = lerp(shadowStrenght, 1.0, saturate(fadeIn));
             }
-            shadowStrenght = clamp(shadowStrenght, 1.0, 1.0);
+            shadowStrenght = clamp(shadowStrenght, 0.3, 1.0);
             float3 shadowColor = diffuse.rgb * shadowStrenght;
-            //diffuse.rgb = lerp(shadowColor, diffuse.rgb, 1 - fogFactor);
+            diffuse.rgb = lerp(shadowColor, diffuse.rgb, 1 - fogFactor);
         }
         
         // The following can be used in order to detect if you are looking at the sun
