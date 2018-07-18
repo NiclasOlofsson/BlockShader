@@ -25,7 +25,7 @@ struct GeometryShaderInput
 #endif
 #ifdef NEAR_WATER
     float cameraDist : TEXCOORD_2;
-    float3 normal : NORMAL;
+    float3 normal : TEXCOORD3;
 #endif
 #ifdef FOG
     float4 fogColor : FOG_COLOR;
@@ -50,7 +50,7 @@ struct GeometryShaderOutput
 #endif
 #ifdef NEAR_WATER
     float cameraDist : TEXCOORD_2;
-    float3 normal : NORMAL;
+    float3 normal : TEXCOORD3;
 #endif
 #ifdef FOG
     float4 fogColor : FOG_COLOR;
@@ -120,6 +120,79 @@ float GetWaterDisplacement(float3 worldPos)
     return GetWaterDisplacementInternal(worldPos, direction, A, S, L);
 }
 
+static float pi = 3.14159;
+static float waterHeight = 1;
+static int numWaves = 4;
+static float amplitude[8];
+static float wavelength[8];
+static float speed[8];
+static float2 direction[8];
+static float time = 0;
+
+float wave(int i, float x, float y)
+{
+    float2 position = float2(x, y);
+    float frequency = 2.0 * pi / wavelength[i];
+    float phase = speed[i] * frequency;
+    float2 dir = direction[i];
+    float theta = dot(dir, position);
+    return amplitude[i] * sin(theta * frequency + time * phase) - amplitude[i];
+}
+
+float bigWaveHeight(float x, float y)
+{
+    int i = 0;
+
+    time = TIME;
+
+    amplitude[i] = 0.12;
+    wavelength[i] = 4.0;
+    direction[i] = float2(0.5, 1);
+    speed[i] = 0.8f;
+    i++;
+
+    //amplitude[i] = 0.015;
+    //wavelength[i] = 1.2;
+    //direction[i] = 90;
+    //speed[i] = 0.8f;
+    //i++;
+
+    //amplitude[i] = 0.006;
+    //wavelength[i] = 0.8;
+    //direction[i] = 90;
+    //speed[i] = 1.2f;
+    //i++;
+
+    numWaves = i;
+
+    float height = 0.0;
+    for (i = 0; i < numWaves; i++)
+    {
+        height += wave(i, x, y);
+    }
+    return height;
+}
+
+float3 waveNormal(float x, float y)
+{
+    float dx = 0.0;
+    float dy = 0.0;
+    for (int i = 0; i < numWaves; i++)
+    {
+        float frequency = 2.0 * pi / wavelength[i];
+        float phase = speed[i] * frequency;
+        float2 dir = direction[i];
+        float theta = dot(dir, float2(x, y));
+        float angle = theta * frequency + time * phase;
+
+        dx += amplitude[i] * dir.x * frequency * cos(angle);
+        dy += amplitude[i] * dir.y * frequency * cos(angle);
+    }
+    float3 n = float3(-dx, 1.0, -dy);
+    return normalize(n);
+}
+
+
 float3 GetNormal(float3 v1, float3 v2, float3 v3)
 {
     float3 a, b;
@@ -168,9 +241,13 @@ GeometryShaderOutput Tesselate(GeometryShaderInput input0, GeometryShaderInput i
     }
     else
     {
-        float displacement = GetWaterDisplacement(output.fragmentPosition);
-        output.pos.y -= displacement;
-        output.fragmentPosition.y -= displacement;
+        float displacement = bigWaveHeight(output.fragmentPosition.x, output.fragmentPosition.z);
+        //displacement = 0;
+        output.pos.y += displacement;
+        output.fragmentPosition.y += displacement;
+#ifdef NEAR_WATER
+        output.normal = waveNormal(output.fragmentPosition.x, output.fragmentPosition.z);
+#endif
     }
     //output.pos.y -= GetWaterDisplacementInternal(output.fragmentPosition, float2(1, 0.5), 0.05, 3, 1);
 
@@ -187,10 +264,10 @@ GeometryShaderOutput Tesselate(GeometryShaderInput input0, GeometryShaderInput i
 void WriteTriangle(GeometryShaderOutput pos1, GeometryShaderOutput pos2, GeometryShaderOutput pos3, inout TriangleStream<GeometryShaderOutput> outStream)
 {
 #ifdef NEAR_WATER
-    float3 normal = GetNormal(pos1.fragmentPosition, pos2.fragmentPosition, pos3.fragmentPosition);
-    pos1.normal = normal;
-    pos2.normal = normal;
-    pos3.normal = normal;
+    //float3 normal = GetNormal(pos1.fragmentPosition, pos2.fragmentPosition, pos3.fragmentPosition);
+    //pos1.normal = waveNormal(pos1.fragmentPosition.x, pos1.fragmentPosition.z);
+    //pos2.normal = waveNormal(pos2.fragmentPosition.x, pos2.fragmentPosition.z);
+    //pos3.normal = waveNormal(pos3.fragmentPosition.x, pos3.fragmentPosition.z);
 #endif
     outStream.Append(pos1);
     outStream.Append(pos2);

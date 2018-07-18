@@ -41,7 +41,7 @@ struct PS_Input
 
 #ifdef NEAR_WATER
     float cameraDist : TEXCOORD_2;
-    float3 normal : NORMAL;
+    float3 normal : TEXCOORD3;
 #endif
 
 #ifdef FOG
