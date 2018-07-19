@@ -1,16 +1,19 @@
 {
-  "header": {
-    "pack_id": "BlockShader",
-    "name": "BlockShader",
-    "packs_version": "1.0.0",
-    "description": "BlockShader by gurunx - becuase voxels matters",
-    "modules": [
+   "format_version" : 1,
+   "header" : {
+      "description" : "BlockShader by gurunx - becuase voxels matters",
+      "name" : "BlockShader",
+      "platform_locked" : false,
+      "uuid" : "a1b6ad6d-48b5-35a8-b8c6-0cecf1e3eca5",
+      "version" : [ 1, 0, 1 ]
+   },
+   "min_engine_version" : [ 1, 0, 1, 1, 2, 5 ],
+   "modules" : [
       {
-        "description": "BlockShader by gurunx - becuase voxels matters",
-        "version": "1.0.0",
-        "uuid": "BlockShader",
-        "type": "resources"
+         "description" : "BlockShader by gurunx - becuase voxels matters",
+         "type" : "resources",
+         "uuid" : "83d54d98-c4f8-3b74-bc4f-3fc43a9cc556",
+         "version" : [ 1, 0, 1 ]
       }
-    ]
-  }
+   ]
 }

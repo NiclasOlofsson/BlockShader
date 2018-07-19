@@ -15,19 +15,19 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="..\shaders\dx11\renderchunk.fragment.hlsl">
+    <FxCompile Include="..\shaders\hlsl\renderchunk.fragment.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\renderchunk.geometry.hlsl">
+    <FxCompile Include="..\shaders\hlsl\renderchunk.geometry.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\renderchunk.vertex.hlsl">
+    <FxCompile Include="..\shaders\hlsl\renderchunk.vertex.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\sun.vertex.hlsl">
+    <FxCompile Include="..\shaders\hlsl\sun.fragment.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\sun.fragment.hlsl">
+    <FxCompile Include="..\shaders\hlsl\sun.vertex.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
   </ItemGroup>

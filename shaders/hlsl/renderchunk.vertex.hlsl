@@ -39,7 +39,7 @@ struct PS_Input
     snorm float2 uv1 : TEXCOORD_1_FB_MSAA;
 #endif
 
-#ifdef NEAR_WATER
+#ifdef BLEND
     float cameraDist : TEXCOORD_2;
     float3 normal : TEXCOORD3;
 #endif
@@ -100,9 +100,7 @@ void main(in VS_Input VSInput, out PS_Input PSInput)
     }
 
 #endif
-
-
-    PSInput.position = mul(WORLDVIEW, float4(worldPos, 1));
+	PSInput.position = mul(WORLDVIEW, float4(worldPos, 1));
     PSInput.position = mul(PROJ, PSInput.position);
 #endif
 #endif
@@ -117,6 +115,12 @@ void main(in VS_Input VSInput, out PS_Input PSInput)
         PSInput.water_plane_flag = 0.0;
     }
 #endif
+
+	if (PSInput.color.a < 0.95) {
+#ifdef BLEND
+#define NEAR_WATER
+#endif
+	}
 
 	///// find distance from the camera
 
@@ -170,7 +174,10 @@ void main(in VS_Input VSInput, out PS_Input PSInput)
 #endif //FANCY
 #endif
 
-    PSInput.fragmentPosition = mul(WORLD, float4(worldPos, 1)).xyz + VIEW_POS;
+    //PSInput.fragmentPosition = mul(WORLD, float4(worldPos, 1)).xyz + VIEW_POS;
+    PSInput.fragmentPosition = PSInput.position;
+	//float3 worldPos = (VSInput.position.xyz * CHUNK_ORIGIN_AND_SCALE.w) + CHUNK_ORIGIN_AND_SCALE.xyz;
+	//PSInput.fragmentPosition = mul(WORLD, float4(worldPos, 1)).xyz;
     PSInput.fragmentPosition.y -= 0.12; // Still haven't figured out why, but this is the "logical" thing todo.
     PSInput.lookVector = VSInput.position;
 

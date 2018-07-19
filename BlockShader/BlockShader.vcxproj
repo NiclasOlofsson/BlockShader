@@ -130,22 +130,22 @@ xcopy $(MSBuildProjectDirectory)\..\materials C:\Users\nicke_000\AppData\Local\P
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <FxCompile Include="..\shaders\dx11\renderchunk.fragment.hlsl">
+    <FxCompile Include="..\shaders\hlsl\renderchunk.fragment.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\renderchunk.geometry.hlsl">
+    <FxCompile Include="..\shaders\hlsl\renderchunk.geometry.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Geometry</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Geometry</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\renderchunk.vertex.hlsl">
+    <FxCompile Include="..\shaders\hlsl\renderchunk.vertex.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\sun.fragment.hlsl">
+    <FxCompile Include="..\shaders\hlsl\sun.fragment.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
     </FxCompile>
-    <FxCompile Include="..\shaders\dx11\sun.vertex.hlsl">
+    <FxCompile Include="..\shaders\hlsl\sun.vertex.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
     </FxCompile>
   </ItemGroup>

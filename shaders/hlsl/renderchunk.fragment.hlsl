@@ -26,7 +26,7 @@ struct PS_Input
     snorm float2 uv1 : TEXCOORD_1_FB_MSAA;
 #endif
 
-#ifdef NEAR_WATER
+#ifdef BLEND
     float cameraDist : TEXCOORD_2;
     float3 normal : TEXCOORD3;
 #endif
@@ -57,10 +57,10 @@ float3 waveNormal(float x, float y)
     float angle;
     int i = 0;
 
-    amplitude[i] = 0.12;
+    amplitude[i] = 0.03;
     wavelength[i] = 4.0;
     direction[i] = float2(0.5, 1);
-    speed[i] = 0.8f;
+    speed[i] = 0.3f;
     i++;
 
     //amplitude[i] = 0.01;
@@ -81,11 +81,11 @@ float3 waveNormal(float x, float y)
     //speed[i] = 0.5f;
     //i++;
 
-    amplitude[i] = 0.05;
-    wavelength[i] = 1.3;
-    direction[i] = float2(1, 0);
-    speed[i] = 1.2f;
-    i++;
+    //amplitude[i] = 0.05;
+    //wavelength[i] = 1.3;
+    //direction[i] = float2(1, 0);
+    //speed[i] = 1.2f;
+    //i++;
 
     numWaves = i;
 
@@ -157,9 +157,9 @@ float GetCloud(float3 reflectedPosition)
     float noise = BNoise2D(ceil(reflectedPosition.x), ceil(reflectedPosition.z), 10000);
     noise += BNoise2D(ceil(reflectedPosition.x), ceil(reflectedPosition.z + 1), 10000);
     noise += BNoise2D(ceil(reflectedPosition.x), ceil(reflectedPosition.z - 1), 10000);
-    noise += BNoise2D(ceil(reflectedPosition.x + 1), ceil(reflectedPosition.z + 1), 10000);
+	noise += BNoise2D(ceil(reflectedPosition.x + 1), ceil(reflectedPosition.z), 10000);
+	noise += BNoise2D(ceil(reflectedPosition.x + 1), ceil(reflectedPosition.z + 1), 10000);
     noise += BNoise2D(ceil(reflectedPosition.x + 1), ceil(reflectedPosition.z - 1), 10000);
-    noise += BNoise2D(ceil(reflectedPosition.x + 1), ceil(reflectedPosition.z), 10000);
     noise += BNoise2D(ceil(reflectedPosition.x - 1), ceil(reflectedPosition.z), 10000);
     noise += BNoise2D(ceil(reflectedPosition.x - 1), ceil(reflectedPosition.z + 1), 10000);
     noise += BNoise2D(ceil(reflectedPosition.x - 1), ceil(reflectedPosition.z - 1), 10000);
@@ -184,11 +184,17 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
 	return;
 #else
 
+	if (PSInput.color.a < 0.95) {
+#ifdef BLEND
+#define NEAR_WATER
+#endif
+	}
+
 #if !defined(TEXEL_AA) || !defined(TEXEL_AA_FEATURE) || (VERSION < 0xa000 /*D3D_FEATURE_LEVEL_10_0*/) 
 	float4 diffuse = TEXTURE_0.Sample(TextureSampler0, PSInput.uv0);
 #else
     float4 diffuse = texture2D_AA(TEXTURE_0, TextureSampler0, PSInput.uv0);
-    #ifdef NEAR_WATER
+#ifdef NEAR_WATER
     {
         //diffuse = float4(0.2, 0.5, 0.6, 0.0);
         float3 relPos = (PSInput.fragmentPosition - VIEW_POS) * -1;
@@ -251,9 +257,9 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
 
     float4 uvs = TEXTURE_1.Sample(TextureSampler1, float2(PSInput.uv1.x * 0.65, PSInput.uv1.y));
     diffuse = float4(0.2, 0.5, 0.6, 0.7) * uvs;
-    float4 white = float4(1, 1, 1, 1);
-    float3 sunPosition = float3(4675, 65 + 10, -2435);
-    //float3 sunPosition = float3(0, 1000 * uvs.r, -10000 * (1 - uvs.r)) + VIEW_POS;
+    float4 white = float4(0.1, 0.1, 0.1, 0.1);
+    //float3 sunPosition = float3(4675, 65 + 10, -2435);
+    float3 sunPosition = float3(0, 1000 * uvs.r, -10000 * (1 - uvs.r)) + VIEW_POS;
     //float3 sunPosition = float3(0, 0, 0) + VIEW_POS;
     float3 sun = normalize(PSInput.fragmentPosition - sunPosition); // From sun to pixel
 
@@ -264,7 +270,7 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
 
     float3 normal = float3(0, 1, 0);
     //normal = normalize(PSInput.normal);
-    normal = normalize(normal + waveNormal(PSInput.fragmentPosition.x, PSInput.fragmentPosition.z));
+	//normal = normalize(normal + waveNormal(PSInput.fragmentPosition.x, PSInput.fragmentPosition.z));
     //normal = waveNormal(PSInput.fragmentPosition.x, PSInput.fragmentPosition.z);
     //normal = float3(0, 1, 0);
 
@@ -311,6 +317,7 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
     // Calculate cloud and it's reflection
     float3 reflection = normalize(reflect(cameraDirection, normal));
     float3 reflectedPosition = reflection * (133 - PSInput.fragmentPosition.y) / reflection.y + PSInput.fragmentPosition;
+    //float3 reflectedPosition = PSInput.fragmentPosition;
 
     float noise = GetCloud(reflectedPosition);
     float Eta = 0.15; // Water
@@ -337,13 +344,22 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
         //    cloudColor = lerp(cloudColor, refractionColor, fresnel);
         //}
 
-        diffuse.rgb = lerp(diffuse.rgb, cloudColor.rgb, fresnel);
+        //diffuse.rgb = lerp(diffuse.rgb, cloudColor.rgb, fresnel);
     }
     else
     {
         float3 cloudColor = float3(0.6, 0.8, 0.9) * 1.0;
         diffuse.rgb = lerp(diffuse.rgb, cloudColor.rgb, fresnel);
     }
+
+	float3 postest = (PSInput.fragmentPosition * CHUNK_ORIGIN_AND_SCALE.w) + CHUNK_ORIGIN_AND_SCALE.xyz;
+	postest = mul(WORLD, float4(postest, 1)).xyz + VIEW_POS;
+	if (postest.x > 0) {
+		diffuse.rgb = float3(1, 0, 0);
+	} else if (postest.x < 0) {
+		diffuse.rgb = float3(0, 0, 1);
+	}
+
 
     //diffuse.a = 0.2;
 
@@ -363,7 +379,6 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
 #endif
 #endif
     {
-
         float3 texColor = diffuse * 1.5; // Hardcoded Exposure Adjustment
 
         float ExposureBias = 2.0f;
@@ -423,7 +438,8 @@ void main(in PS_Input PSInput, out PS_Output PSOutput)
         // The following can be used in order to detect if you are looking at the sun
         // Think: Flairs and water reflections...
         // float strength = (FOG_COLOR.r + FOG_COLOR.g + FOG_COLOR.b) / 3;
-    }
+
+	}
 
     //bool needYReset = frac(PSInput.fragmentPosition.y) > 0.887 && frac(PSInput.fragmentPosition.y) <= 1.0;
     //if (needYReset)
