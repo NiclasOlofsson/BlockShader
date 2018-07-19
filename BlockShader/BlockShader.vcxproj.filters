@@ -38,5 +38,11 @@
     <None Include="..\materials\terrain.material">
       <Filter>Source Files</Filter>
     </None>
+    <None Include="Includes\ShaderConstants.fxh">
+      <Filter>Header Files</Filter>
+    </None>
+    <None Include="Includes\util.fxh">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

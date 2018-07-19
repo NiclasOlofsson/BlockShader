@@ -95,8 +95,10 @@
       <SDLCheck>true</SDLCheck>
     </ClCompile>
     <FxCompile>
-      <ShaderModel>5.0</ShaderModel>
+      <ShaderModel>5.1</ShaderModel>
       <AdditionalIncludeDirectories>$(SolutionDir)Includes\</AdditionalIncludeDirectories>
+      <SetRootSignature>
+      </SetRootSignature>
     </FxCompile>
     <PostBuildEvent>
       <Command>xcopy $(MSBuildProjectDirectory)\..\shaders C:\Users\nicke_000\AppData\Local\Packages\Microsoft.MinecraftUWP_8wekyb3d8bbwe\LocalState\games\com.mojang\resource_packs\BlockShader\shaders\ /S /Y
@@ -152,6 +154,8 @@ xcopy $(MSBuildProjectDirectory)\..\materials C:\Users\nicke_000\AppData\Local\P
   <ItemGroup>
     <None Include="..\materials\sky.material" />
     <None Include="..\materials\terrain.material" />
+    <None Include="Includes\ShaderConstants.fxh" />
+    <None Include="Includes\util.fxh" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

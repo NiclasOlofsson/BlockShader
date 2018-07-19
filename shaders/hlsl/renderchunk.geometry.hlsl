@@ -60,19 +60,19 @@ struct GeometryShaderOutput
 #endif
 };
 
-bool inBounds(float3 worldPos)
-{
-    bool inBounds = true;
-    if (worldPos.x < CHUNK_CLIP_MIN.x ||
-		worldPos.x > CHUNK_CLIP_MAX.x ||
-		worldPos.z < CHUNK_CLIP_MIN.y ||
-		worldPos.z > CHUNK_CLIP_MAX.y)
-    {
-        inBounds = false;
-    }
+//bool inBounds(float3 worldPos)
+//{
+//    bool inBounds = true;
+//    if (worldPos.x < CHUNK_CLIP_MIN.x ||
+//		worldPos.x > CHUNK_CLIP_MAX.x ||
+//		worldPos.z < CHUNK_CLIP_MIN.y ||
+//		worldPos.z > CHUNK_CLIP_MAX.y)
+//    {
+//        inBounds = false;
+//    }
 
-    return inBounds;
-}
+//    return inBounds;
+//}
 
 
 static const float3 UNIT_Y = float3(0, 1, 0);
