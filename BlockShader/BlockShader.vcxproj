@@ -132,6 +132,9 @@ xcopy $(MSBuildProjectDirectory)\..\materials C:\Users\nicke_000\AppData\Local\P
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <FxCompile Include="..\shaders\hlsl\aurora.fragment.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
     <FxCompile Include="..\shaders\hlsl\flat_red.fragment.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
     </FxCompile>
@@ -163,6 +166,9 @@ xcopy $(MSBuildProjectDirectory)\..\materials C:\Users\nicke_000\AppData\Local\P
     </FxCompile>
     <FxCompile Include="..\shaders\hlsl\sun.vertex.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\Template.fragment.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
