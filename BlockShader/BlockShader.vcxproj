@@ -132,6 +132,13 @@ xcopy $(MSBuildProjectDirectory)\..\materials C:\Users\nicke_000\AppData\Local\P
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <FxCompile Include="..\shaders\hlsl\flat_red.fragment.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\flat_white.fragment.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\position.vertex.hlsl" />
     <FxCompile Include="..\shaders\hlsl\renderchunk.fragment.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
@@ -144,6 +151,13 @@ xcopy $(MSBuildProjectDirectory)\..\materials C:\Users\nicke_000\AppData\Local\P
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
     </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\shadow_stencil_overlay.fragment.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\sky.vertex.hlsl" />
+    <FxCompile Include="..\shaders\hlsl\stars.fragment.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
+    </FxCompile>
     <FxCompile Include="..\shaders\hlsl\sun.fragment.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>
     </FxCompile>
@@ -152,6 +166,7 @@ xcopy $(MSBuildProjectDirectory)\..\materials C:\Users\nicke_000\AppData\Local\P
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\materials\shadows.material" />
     <None Include="..\materials\sky.material" />
     <None Include="..\materials\terrain.material" />
     <None Include="Includes\ShaderConstants.fxh" />

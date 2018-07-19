@@ -30,6 +30,24 @@
     <FxCompile Include="..\shaders\hlsl\sun.vertex.hlsl">
       <Filter>Source Files</Filter>
     </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\flat_white.fragment.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\position.vertex.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\shadow_stencil_overlay.fragment.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\flat_red.fragment.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\sky.vertex.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
+    <FxCompile Include="..\shaders\hlsl\stars.fragment.hlsl">
+      <Filter>Source Files</Filter>
+    </FxCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\materials\sky.material">
@@ -43,6 +61,9 @@
     </None>
     <None Include="Includes\util.fxh">
       <Filter>Header Files</Filter>
+    </None>
+    <None Include="..\materials\shadows.material">
+      <Filter>Source Files</Filter>
     </None>
   </ItemGroup>
 </Project>
